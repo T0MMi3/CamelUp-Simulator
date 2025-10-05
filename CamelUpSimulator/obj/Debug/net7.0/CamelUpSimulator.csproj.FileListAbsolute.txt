@@ -1,0 +1,15 @@
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\bin\Debug\net7.0\CamelUpSimulator.exe
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\bin\Debug\net7.0\CamelUpSimulator.deps.json
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\bin\Debug\net7.0\CamelUpSimulator.runtimeconfig.json
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\bin\Debug\net7.0\CamelUpSimulator.dll
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\bin\Debug\net7.0\CamelUpSimulator.pdb
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\obj\Debug\net7.0\CamelUpSimulator.csproj.AssemblyReference.cache
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\obj\Debug\net7.0\CamelUpSimulator.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\obj\Debug\net7.0\CamelUpSimulator.AssemblyInfoInputs.cache
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\obj\Debug\net7.0\CamelUpSimulator.AssemblyInfo.cs
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\obj\Debug\net7.0\CamelUpSimulator.csproj.CoreCompileInputs.cache
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\obj\Debug\net7.0\CamelUpSimulator.dll
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\obj\Debug\net7.0\refint\CamelUpSimulator.dll
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\obj\Debug\net7.0\CamelUpSimulator.pdb
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\obj\Debug\net7.0\CamelUpSimulator.genruntimeconfig.cache
+C:\Users\Tommy Do\Dev\CamelUp-Simulator\CamelUpSimulator\obj\Debug\net7.0\ref\CamelUpSimulator.dll

@@ -47,15 +47,15 @@ This project simulates the full game mechanics to explore strategy and decision 
 ---
 
 ## Architecture
-CamelUp-Simulator
-│
-├── Board.cs # board state and tile effects
-├── Camel.cs # camel position and stacking
-├── DicePyramid.cs # dice randomization
-├── Player.cs # player bets and coins
-├── LegBet.cs # leg betting mechanics
-├── GameEngine.cs # main game logic
-└── Program.cs # simulation entry point
+CamelUp-Simulator<br>
+│<br>
+├── Board.cs # board state and tile effects<br>
+├── Camel.cs # camel position and stacking<br>
+├── DicePyramid.cs # dice randomization<br>
+├── Player.cs # player bets and coins<br>
+├── LegBet.cs # leg betting mechanics<br>
+├── GameEngine.cs # main game logic<br>
+└── Program.cs # simulation entry point<br>
 
 ---
 
@@ -63,11 +63,11 @@ CamelUp-Simulator
 
 ### Camel Stacking
 
-Camels stack on top of each other and move together when the bottom camel moves.
-Top
-C
-B
-A
+Camels stack on top of each other and move together when the bottom camel moves.<br>
+Top<br>
+C<br>
+B<br>
+A<br>
 Bottom
 
 If camel **A moves**, the entire stack moves.
@@ -76,10 +76,10 @@ If camel **A moves**, the entire stack moves.
 
 ### Dice Pyramid
 
-Each camel has a die that can roll:
-1
-2
-3
+Each camel has a die that can roll:<br>
+1<br>
+2<br>
+3<br>
 
 Each die is rolled **once per leg**, introducing controlled randomness.
 
@@ -89,8 +89,8 @@ Each die is rolled **once per leg**, introducing controlled randomness.
 
 Players may place tiles that:
 
-- move camels forward (+1)
-- move camels backward (-1)
+- move camels forward (+1)<br>
+- move camels backward (-1)<br>
 
 These also affect stacking behavior.
 
@@ -99,17 +99,17 @@ These also affect stacking behavior.
 ## Example Simulation Output
 Leg 1 Results
 
-Blue Camel: 1st
-Green Camel: 2nd
-Yellow Camel: 3rd
-White Camel: 4th
-Orange Camel: 5th
+Blue Camel: 1st<br>
+Green Camel: 2nd<br>
+Yellow Camel: 3rd<br>
+White Camel: 4th<br>
+Orange Camel: 5th<br>
 
 Player Scores
 
-Player 1: 8 coins
-Player 2: 5 coins
-Player 3: 3 coins
+Player 1: 8 coins<br>
+Player 2: 5 coins<br>
+Player 3: 3 coins<br>
 
 ---
 

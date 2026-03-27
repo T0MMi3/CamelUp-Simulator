@@ -1,7 +1,8 @@
-# Camel Up Simulator
+# Camel Up Strategy Simulator
 
-A C# simulation engine for the board game **Camel Up (Second Edition)** that models camel movement, stacking mechanics, dice randomness, and betting strategies.  
-The simulator allows players or AI models to analyze game states and evaluate optimal betting decisions.
+A C#-based simulation engine for the board game Camel Up (Second Edition), modeling complex game state, probabilistic outcomes, and betting strategies.  
+
+This project implements full gameplay mechanics and integrates a Python-based service to provide AI-assisted move recommendations, demonstrating system design, simulation modeling, and cross-language communication.
 
 ---
 
@@ -18,6 +19,17 @@ Because camel movement depends on:
 it creates a complex probabilistic system.
 
 This project simulates the full game mechanics to explore strategy and decision making.
+
+---
+
+Technologies Used
+
+- C#
+- .NET
+- Python (FastAPI)
+- Object-Oriented Design
+- Simulation Modeling
+- REST API Communication
 
 ---
 
@@ -47,15 +59,28 @@ This project simulates the full game mechanics to explore strategy and decision 
 ---
 
 ## Architecture
-CamelUp-Simulator<br>
-│<br>
-├── Board.cs # board state and tile effects<br>
-├── Camel.cs # camel position and stacking<br>
-├── DicePyramid.cs # dice randomization<br>
-├── Player.cs # player bets and coins<br>
-├── LegBet.cs # leg betting mechanics<br>
-├── GameEngine.cs # main game logic<br>
-└── Program.cs # simulation entry point<br>
+The project is structured using object-oriented design principles:
+
+- Game.cs → Controls overall game flow, turns, and progression
+- Board.cs → Manages camel positions, stacks, and tile effects
+- Player.cs → Handles player actions, bets, and scoring
+- DicePyramid.cs → Tracks dice rolls and remaining dice per round
+- Bet.cs → Represents betting logic and payout structure
+- AiClient.cs / PythonAdvisor.cs → Communicates with the Python-based recommendation service
+
+The system separates core game logic from external decision-support components, allowing for extensibility and future improvements.
+
+---
+
+## AI Recommendation System
+
+This project includes a Python-based recommendation service that evaluates the current game state and suggests optimal player actions.
+
+- Communicates with the C# simulator via HTTP
+- Processes game state data to generate move recommendations
+- Designed as a decision-support system for strategy evaluation
+
+This demonstrates integration between C# and Python systems and introduces AI-assisted decision making into a simulation environment.
 
 ---
 
@@ -112,15 +137,14 @@ Player 2: 5 coins<br>
 Player 3: 3 coins<br>
 
 ---
+## How to Run
 
-## Technologies Used
+1. Start the Python AI Server<br>
+pip install -r requirements.txt<br>
+python ai_server.py<br>
+2. Run the C# Simulator<br>
+dotnet run<br>
 
-- C#
-- Object-Oriented Design
-- Simulation Modeling
-- Probability Analysis
-
----
 
 ## Future Improvements
 
@@ -130,15 +154,6 @@ Player 3: 3 coins<br>
 - Visualization of race states
 - Web interface for interactive gameplay
 
----
-
-## Why This Project
-
-This project explores how **simulation and probabilistic modeling** can be used to analyze decision making in uncertain environments.
-
-It also demonstrates object-oriented system design for modeling complex rule-based systems.
-
----
 
 ## License
 

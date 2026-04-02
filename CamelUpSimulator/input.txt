@@ -1,0 +1,26 @@
+1
+Tommy
+blue
+green
+red
+yellow
+purple
+done
+done
+done
+white
+black
+done
+done
+done
+y
+4
+grey
+white 2
+4
+grey
+black 3
+4
+blue
+2
+

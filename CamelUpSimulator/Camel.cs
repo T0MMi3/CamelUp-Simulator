@@ -4,24 +4,13 @@ namespace CamelUpSimulator
     {
         public string Color { get; private set; }
         public int Position { get; set; }
-        public int Height { get; set; }
-        public bool MovesForward { get; set; }
+        public int StackHeight { get; set; } // 0 = bottom of stack
 
-        public Camel(string color, int position = 0, int height = 0, bool movesForward = true)
+        public Camel(string color, int position = 0)
         {
-            Color = color;
+            Color = color.Trim().ToLower(); 
             Position = position;
-            Height = height;
-            MovesForward = movesForward;
+            StackHeight = 0;
         }
-
-        public void Move(int steps)
-        {
-            int dir = MovesForward ? 1 : -1;
-            Position += dir * steps;
-        }
-
-        public override string ToString() =>
-            $"{Color} (Pos: {Position}, Height: {Height}, Dir: {(MovesForward ? "F" : "B")})";
     }
 }

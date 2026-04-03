@@ -295,19 +295,10 @@ namespace CamelUpSimulator
 
 
         // ----------------------------
-        // 4Final Bet (Winner/Loser pile only)
-        // ----------------------------
-        // ----------------------------
-        // Final Bet (Winner/Loser pile only, optional tracking)
+        // Final Bet
         // ----------------------------
         public bool TakeFinalBet(Game game)
         {
-            if (!game.IsTrackingFinalBets())
-            {
-                Console.WriteLine($"{Name} takes a final bet (not tracked in simulator).");
-                return true;
-            }
-
             Console.WriteLine("\n--- Take Final Bet ---");
             Console.WriteLine("Enter 0 to cancel and go back.\n");
 

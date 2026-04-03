@@ -21,9 +21,6 @@ namespace CamelUpSimulator
         public int TotalWinnerPileBets => winnerPilePlayers.Count;
         public int TotalLoserPileBets => loserPilePlayers.Count;
 
-        // Toggle for whether final bets are being tracked/scored
-        private bool trackFinalBets = true;
-
         // Turn order: the player who starts the current leg
         private int startingPlayerIndex = 0;
 
@@ -110,24 +107,8 @@ namespace CamelUpSimulator
             }
 
             EndFinalScoring();
+            LogGameResult();
         }
-
-        // ----------------------------
-        // Setup / config
-        // ----------------------------
-        public void ConfigureFinalBetTracking()
-        {
-            Console.Write("Do you want to track and score final bets this game? (Y/N): ");
-            string input = Console.ReadLine()?.Trim().ToUpper() ?? "Y";
-            trackFinalBets = (input == "Y");
-
-            if (trackFinalBets)
-                Console.WriteLine("✅ Final bets will be tracked and scored.");
-            else
-                Console.WriteLine("⚠️ Final bets will NOT be tracked — skipping related actions and scoring.");
-        }
-
-        public bool IsTrackingFinalBets() => trackFinalBets;
 
         public Player GetStartingPlayer() => Players[startingPlayerIndex];
 
@@ -282,9 +263,6 @@ namespace CamelUpSimulator
 
         public void EnterHiddenFinalBets()
         {
-            if (!trackFinalBets)
-                return;
-
             hiddenWinnerPile.Clear();
             hiddenLoserPile.Clear();
 
@@ -374,15 +352,6 @@ namespace CamelUpSimulator
             string winnerColor = camelOrder[0];
             string loserColor = camelOrder[^1];
 
-            if (!trackFinalBets)
-            {
-                Console.WriteLine("\nFinal bets were not tracked this game. Skipping final scoring.");
-                Console.WriteLine("\n=== Final Player Scores ===");
-                foreach (var player in Players)
-                    Console.WriteLine($"{player.Name}: {player.TotalPoints} points");
-                return;
-            }
-
             EnterHiddenFinalBets();
 
             // Official-style tiered payouts: first correct gets most
@@ -433,6 +402,41 @@ namespace CamelUpSimulator
             Console.WriteLine("\n=== Final Player Scores ===");
             foreach (var player in Players)
                 Console.WriteLine($"{player.Name}: {player.TotalPoints} points");
+        }
+
+        private void LogGameResult()
+        {
+            var normalCamelOrder = Board.GetCamelOrder()
+                .Where(c => c != "white" && c != "black")
+                .ToList();
+
+            string winnerCamel = normalCamelOrder.Count > 0 ? normalCamelOrder[0] : "unknown";
+            string loserCamel = normalCamelOrder.Count > 0 ? normalCamelOrder[^1] : "unknown";
+            string finalCamelOrder = string.Join(">", normalCamelOrder);
+            string finalScores = string.Join("|", Players.Select(p => $"{p.Name}:{p.TotalPoints}"));
+
+            string filePath = "game_results.csv";
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                string header = "game_id,timestamp,total_legs,winner_camel,loser_camel,winner_pile_bets,loser_pile_bets,final_camel_order,final_scores";
+                System.IO.File.WriteAllText(filePath, header + Environment.NewLine);
+            }
+
+            string line =
+                $"{GameId}," +
+                $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}," +
+                $"{CurrentLeg}," +
+                $"{winnerCamel}," +
+                $"{loserCamel}," +
+                $"{TotalWinnerPileBets}," +
+                $"{TotalLoserPileBets}," +
+                $"\"{finalCamelOrder}\"," +
+                $"\"{finalScores}\"";
+
+            System.IO.File.AppendAllText(filePath, line + Environment.NewLine);
+
+            Console.WriteLine("[DEBUG] Game result summary logged to game_results.csv");
         }
     }
 }

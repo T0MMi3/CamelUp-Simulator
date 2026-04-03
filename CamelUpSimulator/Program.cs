@@ -41,7 +41,7 @@ class Program
         {
             preSetupBoard = new Board(16, new List<string>());
 
-            Console.WriteLine("\n=== Setup: Place Normal Camels (tiles 1–3) ===");
+            Console.WriteLine("\n=== Setup: Place Normal Camels (tiles 1-3) ===");
             List<string> remainingNormal = new(normalCamels);
 
             for (int pos = 0; pos <= 2; pos++)
@@ -54,6 +54,11 @@ class Program
                     Console.WriteLine($"Available camels to place: {string.Join(", ", remainingNormal)}");
                     Console.Write("Enter camel color to place next on stack (or 'd' to finish this tile): ");
                     string? camel = Console.ReadLine()?.Trim().ToLower();
+                    if (string.IsNullOrEmpty(camel))
+                    {
+                        Console.WriteLine("Invalid input.");
+                        continue;
+                    }
 
                     if (camel == "d") adding = false;
                     else if (remainingNormal.Contains(camel))
@@ -68,7 +73,7 @@ class Program
                 }
             }
 
-            Console.WriteLine("\n=== Setup: Place White/Black Camels (tiles 14–16) ===");
+            Console.WriteLine("\n=== Setup: Place White/Black Camels (tiles 14-16) ===");
             List<string> remainingSpecial = new(specialCamels);
 
             for (int pos = 13; pos <= 15; pos++)
@@ -81,6 +86,11 @@ class Program
                     Console.WriteLine($"Available camels to place: {string.Join(", ", remainingSpecial)}");
                     Console.Write("Enter camel color to place next on stack (or 'd' to finish this tile): ");
                     string? camel = Console.ReadLine()?.Trim().ToLower();
+                    if (string.IsNullOrEmpty(camel))
+                    {
+                        Console.WriteLine("Invalid input.");
+                        continue;
+                    }
 
                     if (camel == "d") adding = false;
                     else if (remainingSpecial.Contains(camel))
@@ -121,13 +131,12 @@ class Program
         // Game initialization
         // ----------------------------
         Game game = new(playerNames, preSetupBoard);
-        game.ConfigureFinalBetTracking();
 
         Console.WriteLine("\nStarting game tracking...");
         game.Board.PrintBoard();
 
         // ----------------------------
-        // ✅ Run main async loop (Game.cs controls leg flow)
+        // Run main async loop (Game.cs controls leg flow)
         // ----------------------------
         await game.PlayGameAsync();
 

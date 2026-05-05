@@ -8,9 +8,12 @@ namespace CamelUpApi.Services
 
         public GameService()
         {
-            // temporary test game
             var players = new List<string> { "Tommy" };
-            Game = new Game(players);
+
+            var camelColors = new List<string> { "blue", "green", "red", "yellow", "purple" };
+            var board = new Board(16, camelColors);
+
+            Game = new Game(players, board);
         }
     }
 }

@@ -110,7 +110,6 @@ namespace CamelUpSimulator
             }
 
             Console.WriteLine($"{camel.Color} moves from {oldPos + 1} to {newPos + 1}.");
-            PrintBoard();
         }
 
 
@@ -255,7 +254,6 @@ namespace CamelUpSimulator
             }
 
             Console.WriteLine($"{camel.Color} moves backward from {oldPos + 1} to {newPos + 1}.");
-            PrintBoard();
         }
 
 
@@ -265,7 +263,22 @@ namespace CamelUpSimulator
         // ------------------------------------------------------------
         public bool PlaceDesertTile(DesertTile tile)
         {
+            if (tile == null)
+                return false;
+
+            if (tile.Position < 0 || tile.Position >= SpacesCount)
+                return false;
+
+            // Can't place where camels are
+            if (Spaces[tile.Position].Count > 0)
+                return false;
+
+            // Can't place on an existing tile
             if (DesertTiles.Any(t => t.Position == tile.Position))
+                return false;
+
+            // Can't place adjacent to another tile
+            if (DesertTiles.Any(t => Math.Abs(t.Position - tile.Position) == 1))
                 return false;
 
             DesertTiles.Add(tile);

@@ -42,6 +42,10 @@ namespace CamelUpSimulator
         // ----------------------------
         // ----------------------------
         // Main Turn Menu (async with AI suggestion)
+        
+            //string aiSuggestion = await AiClient.GetSuggestedMoveAsync(game, Name);
+            //game.CurrentAiSuggestion = aiSuggestion; // Store the AI suggestion in the game state for logging and display
+            //Console.WriteLine($"\n[AI Suggestion] {aiSuggestion}\n");
         // ----------------------------
         public async Task TakeTurnAsync(Game game)
         {
@@ -49,16 +53,23 @@ namespace CamelUpSimulator
             Console.WriteLine($"It's {Name}'s turn!");
             Console.WriteLine("-----------------------------------");
 
-            string aiSuggestion = await AiClient.GetSuggestedMoveAsync(game, Name);
-            game.CurrentAiSuggestion = aiSuggestion;
-            Console.WriteLine($"\n[AI Suggestion] {aiSuggestion}\n");
+            game.CurrentAiSuggestion = "";
+
+            game.Board.PrintBoard();
+            game.ShowLegProbabilities(this);
+            game.DisplayLegBetStatus();
+
+            string suggestion = await AiClient.GetSuggestedMoveAsync(game, Name);
+            game.CurrentAiSuggestion = suggestion;
+
+            Console.WriteLine("\nAI Suggestion:");
+            Console.WriteLine(suggestion);
 
             bool done = false;
+            string actionTaken = "";
+
             while (!done)
             {
-                game.Board.PrintBoard();
-                game.DisplayLegBetStatus();
-
                 Console.WriteLine("\nChoose action:");
                 Console.WriteLine("1 = Leg Bet");
                 Console.WriteLine("2 = Place Desert Tile");
@@ -67,26 +78,40 @@ namespace CamelUpSimulator
 
                 Console.Write("Enter action number: ");
                 string? input = Console.ReadLine()?.Trim();
-                if (!int.TryParse(input, out int choice)) continue;
+
+                if (!int.TryParse(input, out int choice))
+                {
+                    Console.WriteLine("Invalid choice. Try again.");
+                    continue;
+                }
 
                 switch (choice)
                 {
                     case 1:
                         done = TakeLegBet(game);
+                        if (done) actionTaken = "Leg Bet";
                         break;
+
                     case 2:
                         done = PlaceDesertTile(game);
+                        if (done) actionTaken = "Desert Tile";
                         break;
+
                     case 3:
                         done = TakePyramidTicket(game);
+                        if (done) actionTaken = "Roll";
                         break;
+
                     case 4:
                         done = TakeFinalBet(game);
+                        if (done) actionTaken = "Final Bet";
                         break;
+
                     default:
                         Console.WriteLine("Invalid choice. Try again.");
                         break;
                 }
+                game.Logger.LogTurn(game, Name, suggestion, actionTaken);
             }
         }
 
@@ -188,12 +213,43 @@ namespace CamelUpSimulator
 
             Console.Write("Enter position (2–15) for your tile, or 0 to cancel: ");
             string input = Console.ReadLine()?.Trim() ?? "";
-            if (input == "0") return false;
+            if (input == "0")
+                return false;
 
             if (!int.TryParse(input, out int pos) || pos < 2 || pos > 15)
             {
                 Console.WriteLine("Invalid position. Try again.");
                 return false;
+            }
+
+            int spaceIndex = pos - 1;
+
+            // Can't place on a space with camels
+            if (game.Board.Spaces[spaceIndex].Count > 0)
+            {
+                Console.WriteLine("That space already has camels. You can't place a tile there.");
+                return false;
+            }
+
+            // Can't place on a space that already has a tile
+            if (game.Board.DesertTiles.Any(t => t.Position == spaceIndex))
+            {
+                Console.WriteLine("That space already has a desert tile.");
+                return false;
+            }
+
+            // Can't place adjacent to another desert tile
+            if (game.Board.DesertTiles.Any(t => Math.Abs(t.Position - spaceIndex) == 1))
+            {
+                Console.WriteLine("You can't place a tile directly next to another desert tile.");
+                return false;
+            }
+
+            // If player already has a tile, remove the old one first
+            if (placedTile != null)
+            {
+                game.Board.DesertTiles.RemoveAll(t => t.OwnerName == Name);
+                placedTile = null;
             }
 
             Console.WriteLine("\nChoose tile type:");
@@ -202,7 +258,8 @@ namespace CamelUpSimulator
             Console.Write("Enter choice (or 0 to cancel): ");
             string typeInput = Console.ReadLine()?.Trim() ?? "";
 
-            if (typeInput == "0") return false;
+            if (typeInput == "0")
+                return false;
 
             if (!int.TryParse(typeInput, out int typeChoice) || (typeChoice != 1 && typeChoice != 2))
             {
@@ -211,7 +268,7 @@ namespace CamelUpSimulator
             }
 
             bool isCheering = (typeChoice == 1);
-            DesertTile newTile = new DesertTile(Name, pos - 1, isCheering);
+            DesertTile newTile = new DesertTile(Name, spaceIndex, isCheering);
 
             if (game.Board.PlaceDesertTile(newTile))
             {
@@ -219,7 +276,6 @@ namespace CamelUpSimulator
                 placedTile = newTile;
                 string detail = (isCheering ? "+1" : "-1") + $" space {pos}";
                 LogTurnData(game, game.CurrentAiSuggestion ?? "", "Desert Tile", detail);
-
                 return true;
             }
 

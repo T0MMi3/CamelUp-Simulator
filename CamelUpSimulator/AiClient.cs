@@ -33,9 +33,9 @@ namespace CamelUpSimulator
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadAsStringAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                return $"[AI ERROR] {ex.Message}";
+                return "AI unavailable — using EV recommendation instead.";
             }
         }
     }

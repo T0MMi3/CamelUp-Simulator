@@ -13,6 +13,7 @@ namespace CamelUpSimulator
         public int CurrentLeg { get; private set; }
         public string CurrentAiSuggestion { get; set; } = "";
         public Guid GameId { get; } = Guid.NewGuid();
+        public GameLogger Logger { get; private set; }
 
         // Public final-pile info visible during live play
         private List<Player> winnerPilePlayers = new();
@@ -32,16 +33,134 @@ namespace CamelUpSimulator
         // Leg bet decks
         private Dictionary<string, Stack<LegBet>> legBetDecks = new();
 
-        public Game(List<string> playerNames, Board preSetupBoard)
+        public Game(List<string> playerNames, Board? board = null, bool isSimulation = false)
         {
-            Board = preSetupBoard;
+            GameId = Guid.NewGuid();
+            Logger = new GameLogger();
+
+            if (!isSimulation)
+            {
+                Console.WriteLine($"[DEBUG] Game ID: {GameId}");
+            }
+
+            if (board != null)
+            {
+                Board = board;
+            }
+            else
+            {
+                List<string> camelColors = new List<string>
+                {
+                    "blue", "green", "red", "yellow", "purple", "white", "black"
+                };
+
+                Board = new Board(16, new List<string>());
+
+                // If you ever use this path for a fresh game, you may want to place camels later manually.
+                // The empty list keeps board spaces initialized without auto-placing camels.
+            }
+
             Players = playerNames.Select(name => new Player(name)).ToList();
+
             DicePyramid = new DicePyramid(Board.Camels.Select(c => c.Color).ToList());
+
             CurrentLeg = 1;
 
             InitializeLegBets();
+        }
 
-            Console.WriteLine($"[DEBUG] Game ID: {GameId}");
+        public Game CloneForSimulation(Board clonedBoard)
+        {
+            var playerNames = Players.Select(p => p.Name).ToList();
+            var simGame = new Game(playerNames, clonedBoard, true);
+
+            // Sync remaining dice
+            var realRemaining = DicePyramid.GetRemainingDice();
+            var simRemaining = simGame.DicePyramid.GetRemainingDice().ToList();
+
+            foreach (var die in simRemaining)
+            {
+                if (!realRemaining.Contains(die))
+                    simGame.DicePyramid.UseDie(die);
+            }
+
+            return simGame;
+        }
+
+        public List<int> GetLegalDesertTilePositionsForPlayer(Player player)
+        {
+            var legal = new List<int>();
+
+            for (int pos = 1; pos < Board.SpacesCount - 1; pos++) // spaces 2-15
+            {
+                if (Board.Spaces[pos].Count > 0)
+                    continue;
+
+                if (Board.DesertTiles.Any(t => t.Position == pos))
+                    continue;
+
+                if (Board.DesertTiles.Any(t => Math.Abs(t.Position - pos) == 1))
+                    continue;
+
+                legal.Add(pos);
+            }
+
+            return legal;
+        }
+
+        public static List<DesertTileRecommendation> EvaluateDesertTilePlacements(Game game, Player player, int simulations = 3000)
+        {
+            var recommendations = new List<DesertTileRecommendation>();
+
+            var baselineProbs = ProbabilityEngine.CalculateLegProbabilities(game, simulations);
+            var baselineEVs = game.GetLegBetExpectedValues(baselineProbs);
+            double baselineBestEV = baselineEVs.Count > 0 ? baselineEVs.Values.Max() : double.NegativeInfinity;
+
+            var legalPositions = game.GetLegalDesertTilePositionsForPlayer(player);
+
+            foreach (int pos in legalPositions)
+            {
+                foreach (bool isCheering in new[] { true, false })
+                {
+                    Board simBoard = ProbabilityEngine.CloneBoard(game.Board);
+                    simBoard.PlaceDesertTile(new DesertTile(player.Name, pos, isCheering));
+
+                    Game simGame = game.CloneForSimulation(simBoard);
+
+                    var probs = ProbabilityEngine.CalculateLegProbabilities(simGame, simulations);
+                    var evs = simGame.GetLegBetExpectedValues(probs);
+
+                    if (evs.Count == 0)
+                        continue;
+
+                    var best = evs.OrderByDescending(kvp => kvp.Value).First();
+                }
+            }
+
+            return recommendations
+                .OrderByDescending(r => r.TotalScore)
+                .ToList();
+        }
+
+        public Dictionary<string, double> GetLegBetExpectedValues(LegProbabilityResult probs)
+        {
+            var evs = new Dictionary<string, double>();
+
+            foreach (var color in probs.FirstPlaceOdds.Keys)
+            {
+                var card = TakeLegBetCardPreview(color);
+                if (card == null)
+                    continue;
+
+                double p1 = probs.FirstPlaceOdds[color] / 100.0;
+                double p2 = probs.SecondPlaceOdds[color] / 100.0;
+                double pElse = 1 - p1 - p2;
+
+                double ev = p1 * card.Value + p2 * 1 + pElse * (-1);
+                evs[color] = ev;
+            }
+
+            return evs;
         }
 
         // ----------------------------
@@ -66,7 +185,6 @@ namespace CamelUpSimulator
                     var player = Players[(startIndex + i) % Players.Count];
 
                     Console.WriteLine($"\n{player.Name}'s turn:");
-                    Board.PrintBoard();
 
                     await player.TakeTurnAsync(this);
 
@@ -197,6 +315,18 @@ namespace CamelUpSimulator
                 return null;
 
             return stack.Pop();
+        }
+
+        public LegBet? TakeLegBetCardPreview(string color)
+        {
+            if (!legBetDecks.ContainsKey(color))
+                return null;
+
+            var stack = legBetDecks[color];
+            if (stack.Count == 0)
+                return null;
+
+            return stack.Peek();
         }
 
         public void DisplayLegBetStatus()
@@ -437,6 +567,106 @@ namespace CamelUpSimulator
             System.IO.File.AppendAllText(filePath, line + Environment.NewLine);
 
             Console.WriteLine("[DEBUG] Game result summary logged to game_results.csv");
+        }
+
+        // ----------------------------
+        // Probability engine interface
+        public void ShowLegProbabilities(Player player)
+        {
+            var probs = ProbabilityEngine.CalculateLegProbabilities(this, 5000);
+            var evs = GetLegBetExpectedValues(probs);
+
+            Console.WriteLine("\n----- Leg Probabilities -----");
+
+            foreach (var color in probs.FirstPlaceOdds.Keys
+                .OrderByDescending(c => probs.FirstPlaceOdds[c]))
+            {
+                double ev = evs.ContainsKey(color) ? evs[color] : 0;
+
+                Console.WriteLine(
+                    $"{color,-8} Win: {probs.FirstPlaceOdds[color],5:0.0}%   " +
+                    $"2nd: {probs.SecondPlaceOdds[color],5:0.0}%   " +
+                    $"EV: {ev,6:0.00}");
+            }
+
+            Console.WriteLine($"\n[Recommendation] {GetLegRecommendation(player, probs)}");
+
+            var tileRecs = ProbabilityEngine.EvaluateDesertTilePlacements(this, player, 2000);
+
+            if (tileRecs.Count > 0)
+            {
+                var bestTile = tileRecs.First();
+
+                Console.WriteLine(
+                    $"[Tile Recommendation] {(bestTile.IsCheering ? "Cheering (+1)" : "Booing (-1)")} " +
+                    $"at space {bestTile.Position + 1} " +
+                    $"(EV gain: {bestTile.TotalScore:0.00})");
+            }
+        }
+
+        public string GetLegRecommendation(Player player, LegProbabilityResult probs)
+        {
+            var gains = GetPlayerLegBetEVGain(player, probs);
+
+            if (gains.Count == 0)
+                return "No valid leg bets available. Best action: Roll.";
+
+            var best = gains.OrderByDescending(kvp => kvp.Value).First();
+            double bestGain = best.Value;
+
+            double currentPortfolioEV = GetPlayerLegPortfolioEV(player, probs);
+
+            if (bestGain > 1.0)
+            {
+                return $"Best action: Take leg bet on {best.Key} " +
+                    $"(gain: {bestGain:0.00}, portfolio EV: {currentPortfolioEV:0.00} -> {currentPortfolioEV + bestGain:0.00})";
+            }
+            else
+            {
+                return $"Best action: Roll " +
+                    $"(+1 guaranteed is better than the best bet gain of {bestGain:0.00}; current portfolio EV: {currentPortfolioEV:0.00})";
+            }
+        }
+
+        public double GetPlayerLegPortfolioEV(Player player, LegProbabilityResult probs)
+        {
+            double totalEV = 0;
+
+            foreach (var bet in player.HeldLegBets)
+            {
+                double p1 = probs.FirstPlaceOdds[bet.Color] / 100.0;
+                double p2 = probs.SecondPlaceOdds[bet.Color] / 100.0;
+                double pElse = 1 - p1 - p2;
+
+                totalEV += p1 * bet.Value + p2 * 1 + pElse * (-1);
+            }
+
+            return totalEV;
+        }
+
+        public Dictionary<string, double> GetPlayerLegBetEVGain(Player player, LegProbabilityResult probs)
+        {
+            var gains = new Dictionary<string, double>();
+
+            double currentEV = GetPlayerLegPortfolioEV(player, probs);
+
+            foreach (var color in AvailableLegBetColors())
+            {
+                var preview = TakeLegBetCardPreview(color);
+                if (preview == null)
+                    continue;
+
+                double p1 = probs.FirstPlaceOdds[color] / 100.0;
+                double p2 = probs.SecondPlaceOdds[color] / 100.0;
+                double pElse = 1 - p1 - p2;
+
+                double addedEV = p1 * preview.Value + p2 * 1 + pElse * (-1);
+                double newPortfolioEV = currentEV + addedEV;
+
+                gains[color] = newPortfolioEV - currentEV; // same as addedEV, but now explicit
+            }
+
+            return gains;
         }
     }
 }

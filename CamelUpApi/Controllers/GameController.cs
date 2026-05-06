@@ -38,6 +38,8 @@ namespace CamelUpApi.Controllers
         [HttpPost("move")]
         public IActionResult MakeMove([FromBody] MoveRequest request)
         {
+            string actionTaken = request.Action;
+            string suggestion = "API move (no AI)";
             var game = _gameService.Game;
             var player = game.Players[0]; // temp: single player
 
@@ -54,6 +56,13 @@ namespace CamelUpApi.Controllers
                 game.DicePyramid.UseDie(request.Color);
                 game.GrantPyramidTicket(player);
             }
+
+            _gameService.Game.Logger.LogTurn(
+                _gameService.Game,
+                _gameService.Game.Players[0].Name,
+                suggestion,
+                actionTaken
+            );
 
             return Ok(new
             {

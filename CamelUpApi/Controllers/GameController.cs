@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using CamelUpApi.Services;
 using CamelUpApi.Models;
+using CamelUpApi.Models;
 
 namespace CamelUpApi.Controllers
 {
@@ -13,6 +14,21 @@ namespace CamelUpApi.Controllers
         public GameController(GameService gameService)
         {
             _gameService = gameService;
+        }
+
+        [HttpPost("setup")]
+        public IActionResult SetupGame([FromBody] SetupRequest request)
+        {
+            if (request.Players == null || request.Players.Count == 0)
+                return BadRequest("At least one player required");
+
+            _gameService.CreateNewGame(request.Players);
+
+            return Ok(new
+            {
+                message = "Game initialized",
+                players = request.Players
+            });
         }
 
         [HttpGet("state")]
@@ -41,7 +57,8 @@ namespace CamelUpApi.Controllers
             string actionTaken = request.Action;
             string suggestion = "API move (no AI)";
             var game = _gameService.Game;
-            var player = game.Players[0]; // temp: single player
+            var playerName = _gameService.GetCurrentPlayer();
+            var player = game.Players.First(p => p.Name == playerName);
 
             if (request.Action == "roll")
             {
@@ -64,9 +81,12 @@ namespace CamelUpApi.Controllers
                 actionTaken
             );
 
+            _gameService.AdvanceTurn();
+
             return Ok(new
             {
                 message = "Move applied",
+                currentPlayer = _gameService.GetCurrentPlayer(),
                 state = new
                 {
                     camels = game.Board.Camels.Select(c => new

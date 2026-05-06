@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using CamelUpApi.Services;
 using CamelUpApi.Models;
-using CamelUpApi.Models;
 
 namespace CamelUpApi.Controllers
 {
@@ -22,12 +21,16 @@ namespace CamelUpApi.Controllers
             if (request.Players == null || request.Players.Count == 0)
                 return BadRequest("At least one player required");
 
-            _gameService.CreateNewGame(request.Players);
+            if (request.Spaces == null || request.Spaces.Count != 16)
+                return BadRequest("Spaces must contain exactly 16 board spaces");
+
+            _gameService.CreateNewGame(request.Players, request.Spaces);
 
             return Ok(new
             {
                 message = "Game initialized",
-                players = request.Players
+                players = request.Players,
+                spaces = request.Spaces
             });
         }
 
@@ -54,31 +57,71 @@ namespace CamelUpApi.Controllers
         [HttpPost("move")]
         public IActionResult MakeMove([FromBody] MoveRequest request)
         {
-            string actionTaken = request.Action;
-            string suggestion = "API move (no AI)";
             var game = _gameService.Game;
+
             var playerName = _gameService.GetCurrentPlayer();
             var player = game.Players.First(p => p.Name == playerName);
 
-            if (request.Action == "roll")
+            switch (request.Action.ToLower())
             {
-                if (request.Color == null || request.Roll == null)
-                    return BadRequest("Color and roll required");
+                case "roll":
 
-                var camel = game.Board.Camels.FirstOrDefault(c => c.Color == request.Color);
-                if (camel == null)
-                    return BadRequest("Invalid camel color");
+                    if (request.Color == null || request.Roll == null)
+                        return BadRequest("Color and roll required");
 
-                game.Board.MoveCamel(camel, request.Roll.Value, game);
-                game.DicePyramid.UseDie(request.Color);
-                game.GrantPyramidTicket(player);
+                    var camel = game.Board.Camels
+                        .FirstOrDefault(c => c.Color == request.Color);
+
+                    if (camel == null)
+                        return BadRequest("Invalid camel color");
+
+                    game.Board.MoveCamel(camel, request.Roll.Value, game);
+                    game.DicePyramid.UseDie(request.Color);
+                    game.GrantPyramidTicket(player);
+
+                    break;
+
+                case "legbet":
+                    if (request.BetColor == null)
+                        return BadRequest("BetColor required");
+
+                    bool success = player.TakeLegBet(game, request.BetColor);
+
+                    if (!success)
+                        return BadRequest("Invalid or unavailable leg bet");
+
+                    break;
+
+                case "deserttile":
+
+                    // later:
+                    // place tile logic
+
+                    break;
+
+                case "winnerbet":
+
+                    // later:
+                    // winner bet logic
+
+                    break;
+
+                case "loserbet":
+
+                    // later:
+                    // loser bet logic
+
+                    break;
+
+                default:
+                    return BadRequest("Invalid action");
             }
 
-            _gameService.Game.Logger.LogTurn(
-                _gameService.Game,
-                _gameService.Game.Players[0].Name,
-                suggestion,
-                actionTaken
+            game.Logger.LogTurn(
+                game,
+                player.Name,
+                "API move (no AI)",
+                request.Action
             );
 
             _gameService.AdvanceTurn();
@@ -87,6 +130,7 @@ namespace CamelUpApi.Controllers
             {
                 message = "Move applied",
                 currentPlayer = _gameService.GetCurrentPlayer(),
+
                 state = new
                 {
                     camels = game.Board.Camels.Select(c => new

@@ -4,17 +4,34 @@ namespace CamelUpApi.Services
 {
     public class GameService
     {
-        public Game Game { get; private set; }
+        public Game Game { get; private set; } = null!;
+        public int CurrentPlayerIndex { get; private set; } = 0;
 
-        public void CreateNewGame(List<string> players)
+        public void CreateNewGame(List<string> players, List<List<string>> spaces)
         {
-            var camelColors = new List<string> { "blue", "green", "red", "yellow", "purple" };
-            var board = new Board(16, camelColors);
+            var board = new Board(16, new List<string>());
+
+            for (int pos = 0; pos < spaces.Count && pos < board.SpacesCount; pos++)
+            {
+                for (int height = 0; height < spaces[pos].Count; height++)
+                {
+                    string color = spaces[pos][height].ToLower();
+
+                    var camel = new Camel(color)
+                    {
+                        Position = pos,
+                        StackHeight = height
+                    };
+
+                    board.Spaces[pos].Add(camel);
+                    board.Camels.Add(camel);
+                }
+            }
 
             Game = new Game(players, board);
+            CurrentPlayerIndex = 0;
         }
 
-        public int CurrentPlayerIndex { get; private set; } = 0;
 
         public string GetCurrentPlayer()
         {

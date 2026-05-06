@@ -13,6 +13,7 @@ namespace CamelUpSimulator
         private List<FinalRaceBet> heldFinalBets = new();
         private DesertTile? placedTile;
         public List<LegBet> HeldLegBets { get; private set; } = new();
+        public List<LegBet> LegBets { get; set; } = new List<LegBet>();
         public IReadOnlyList<FinalRaceBet> HeldFinalBets => heldFinalBets.AsReadOnly();
 
         private int pyramidTicketsUsedThisLeg = 0;
@@ -148,12 +149,34 @@ namespace CamelUpSimulator
         // ----------------------------
         // 1️⃣ Leg Bet
         // ----------------------------
+        public bool TakeLegBet(Game game, string color)
+        {
+            if (string.IsNullOrWhiteSpace(color))
+                return false;
+
+            color = color.Trim().ToLower();
+
+            var betCard = game.TakeLegBetCard(color);
+
+            if (betCard == null)
+            {
+                Console.WriteLine($"No leg bet card available for {color}.");
+                return false;
+            }
+
+            LegBets.Add(betCard);
+
+            Console.WriteLine($"{Name} takes a leg bet card for {color} ({betCard.Value} pts).");
+            return true;
+        }
+
         public bool TakeLegBet(Game game)
         {
             Console.WriteLine("\n--- Take Leg Bet ---");
             Console.WriteLine("Enter 0 to cancel and go back.\n");
 
             var availableColors = game.AvailableLegBetColors();
+
             if (availableColors.Count == 0)
             {
                 Console.WriteLine("No leg bets available!");
@@ -168,6 +191,7 @@ namespace CamelUpSimulator
 
             Console.Write("\nChoose a number (or 0 to cancel): ");
             string? input = Console.ReadLine()?.Trim();
+
             if (!int.TryParse(input, out int choice))
             {
                 Console.WriteLine("Invalid input. Try again.");
@@ -186,21 +210,10 @@ namespace CamelUpSimulator
                 return false;
             }
 
-            string color = availableColors[choice - 1];
-            var betCard = game.TakeLegBetCard(color);
+            string chosenColor = availableColors[choice - 1];
 
-            if (betCard == null)
-            {
-                Console.WriteLine("No cards left for that color.");
-                return false;
-            }
-
-            HeldLegBets.Add(betCard);
-            Console.WriteLine($"{Name} takes a leg bet card for {color} ({betCard.Value} pts).");
-            LogTurnData(game, game.CurrentAiSuggestion ?? "", "Leg Bet", color);
-            return true;
+            return TakeLegBet(game, chosenColor);
         }
-
 
 
         // ----------------------------

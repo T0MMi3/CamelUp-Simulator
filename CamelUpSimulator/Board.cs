@@ -11,7 +11,6 @@ namespace CamelUpSimulator
         public int SpacesCount { get; private set; } = 16;
         public List<List<Camel>> Spaces { get; private set; }
         public List<Camel> CrazyCamels { get; private set; } = new List<Camel>();
-        public List<LegBet> LegBets { get; set; } = new List<LegBet>();
 
         public Board(int boardSize, IEnumerable<string> camelColors)
         {

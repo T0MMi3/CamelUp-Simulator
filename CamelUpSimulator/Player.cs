@@ -296,6 +296,71 @@ namespace CamelUpSimulator
             return false;
         }
 
+        //Consolidated version for API use (no console input)
+        public bool PlaceDesertTile(Game game, int position, string tileType)
+        {
+            if (position < 2 || position > 15)
+            {
+                Console.WriteLine("Invalid tile position.");
+                return false;
+            }
+
+            int spaceIndex = position - 1;
+
+            if (game.Board.Spaces[spaceIndex].Count > 0)
+            {
+                Console.WriteLine("That space already has camels.");
+                return false;
+            }
+
+            if (game.Board.DesertTiles.Any(t => t.Position == spaceIndex))
+            {
+                Console.WriteLine("That space already has a desert tile.");
+                return false;
+            }
+
+            if (game.Board.DesertTiles.Any(t => Math.Abs(t.Position - spaceIndex) == 1))
+            {
+                Console.WriteLine("Cannot place next to another desert tile.");
+                return false;
+            }
+
+            bool isOasis =
+                tileType.ToLower() == "cheering" ||
+                tileType.ToLower() == "oasis" ||
+                tileType == "+1";
+
+            bool isMirage =
+                tileType.ToLower() == "booing" ||
+                tileType.ToLower() == "mirage" ||
+                tileType == "-1";
+
+            if (!isOasis && !isMirage)
+            {
+                Console.WriteLine("Invalid tile type.");
+                return false;
+            }
+
+            if (placedTile != null)
+            {
+                game.Board.DesertTiles.RemoveAll(t => t.OwnerName == Name);
+                placedTile = null;
+            }
+
+            var tile = new DesertTile(Name, spaceIndex, isOasis);
+
+            if (!game.Board.PlaceDesertTile(tile))
+            {
+                Console.WriteLine("Failed to place desert tile.");
+                return false;
+            }
+
+            placedTile = tile;
+
+            Console.WriteLine($"{Name} placed a {(isOasis ? "Cheering (+1)" : "Booing (-1)")} tile at space {position}.");
+            return true;
+        }
+
 
 
         public void ResetDesertTile()

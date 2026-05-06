@@ -93,9 +93,17 @@ namespace CamelUpApi.Controllers
                     break;
 
                 case "deserttile":
+                    if (request.TilePosition == null || request.TileType == null)
+                        return BadRequest("TilePosition and TileType required");
 
-                    // later:
-                    // place tile logic
+                    bool tilePlaced = player.PlaceDesertTile(
+                        game,
+                        request.TilePosition.Value,
+                        request.TileType
+                    );
+
+                    if (!tilePlaced)
+                        return BadRequest("Invalid desert tile placement");
 
                     break;
 

@@ -50,7 +50,7 @@ namespace CamelUpApi.Controllers
                     name = p.Name,
                     points = p.TotalPoints,
 
-                    legBets = p.LegBets.Select(b => new
+                    legBets = p.HeldLegBets.Select(b => new
                     {
                         color = b.Color,
                         value = b.Value

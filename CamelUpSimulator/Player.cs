@@ -13,7 +13,6 @@ namespace CamelUpSimulator
         private List<FinalRaceBet> heldFinalBets = new();
         private DesertTile? placedTile;
         public List<LegBet> HeldLegBets { get; private set; } = new();
-        public List<LegBet> LegBets { get; set; } = new List<LegBet>();
         public IReadOnlyList<FinalRaceBet> HeldFinalBets => heldFinalBets.AsReadOnly();
 
         private int pyramidTicketsUsedThisLeg = 0;
@@ -164,7 +163,7 @@ namespace CamelUpSimulator
                 return false;
             }
 
-            LegBets.Add(betCard);
+            HeldLegBets.Add(betCard);
 
             Console.WriteLine($"{Name} takes a leg bet card for {color} ({betCard.Value} pts).");
             return true;

@@ -344,6 +344,14 @@ namespace CamelUpSimulator
             }
         }
 
+        public Dictionary<string, List<int>> GetLegBetDeckStatus()
+        {
+            return legBetDecks.ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.Select(card => card.Value).ToList()
+            );
+        }
+
         // ----------------------------
         // End of leg
         // ----------------------------

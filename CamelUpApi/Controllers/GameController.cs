@@ -78,6 +78,8 @@ namespace CamelUpApi.Controllers
                     type = t.IsOasis ? "cheering" : "booing"
                 }),
 
+                legBetDecks = game.GetLegBetDeckStatus(),
+
                 diceRemaining = game.DicePyramid.GetRemainingDice()
             };
 

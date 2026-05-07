@@ -460,6 +460,38 @@ namespace CamelUpSimulator
             return true;
         }
 
+        // Consolidated version for API use (no console input)
+        public bool TakeFinalBet(Game game, string color, bool chooseWinner)
+        {
+            color = color.Trim().ToLower();
+
+            if (!game.Board.Camels.Any(c => c.Color == color))
+            {
+                Console.WriteLine("Invalid camel color.");
+                return false;
+            }
+
+            bool alreadyBetOnColor = heldFinalBets.Any(b => b.Color == color);
+
+            if (alreadyBetOnColor)
+            {
+                Console.WriteLine($"{Name} already placed a final bet on {color}.");
+                return false;
+            }
+
+            int value = 8;
+
+            var bet = new FinalRaceBet(color, chooseWinner, value);
+
+            heldFinalBets.Add(bet);
+
+            Console.WriteLine(
+                $"{Name} places a final {(chooseWinner ? "winner" : "loser")} bet on {color}."
+            );
+
+            return true;
+        }
+
 
 
         // ----------------------------

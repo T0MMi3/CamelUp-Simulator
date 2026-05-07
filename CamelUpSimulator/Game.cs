@@ -375,7 +375,7 @@ namespace CamelUpSimulator
             ResetLegBets();
 
             Console.WriteLine("\n--- Leg complete. Press ENTER to continue. ---");
-            Console.ReadLine();
+            //Console.ReadLine();
         }
 
         // ----------------------------

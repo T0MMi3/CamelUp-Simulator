@@ -41,13 +41,43 @@ namespace CamelUpApi.Controllers
 
             var state = new
             {
+                currentPlayer = _gameService.GetCurrentPlayer(),
+
+                currentLeg = game.CurrentLeg,
+
+                players = game.Players.Select(p => new
+                {
+                    name = p.Name,
+                    points = p.TotalPoints,
+
+                    legBets = p.LegBets.Select(b => new
+                    {
+                        color = b.Color,
+                        value = b.Value
+                    }),
+
+                    finalBets = p.HeldFinalBets.Select(b => new
+                    {
+                        color = b.Color,
+                        isWinner = b.IsWinner,
+                        value = b.Value
+                    })
+                }),
+
                 camels = game.Board.Camels.Select(c => new
                 {
-                    c.Color,
-                    c.Position,
-                    c.StackHeight
+                    color = c.Color,
+                    position = c.Position,
+                    stackHeight = c.StackHeight
                 }),
-                currentLeg = game.CurrentLeg,
+
+                desertTiles = game.Board.DesertTiles.Select(t => new
+                {
+                    owner = t.OwnerName,
+                    position = t.Position,
+                    type = t.IsOasis ? "cheering" : "booing"
+                }),
+
                 diceRemaining = game.DicePyramid.GetRemainingDice()
             };
 
@@ -65,21 +95,46 @@ namespace CamelUpApi.Controllers
             switch (request.Action.ToLower())
             {
                 case "roll":
-
+                {
                     if (request.Color == null || request.Roll == null)
                         return BadRequest("Color and roll required");
 
-                    var camel = game.Board.Camels
-                        .FirstOrDefault(c => c.Color == request.Color);
+                    string color = request.Color.Trim().ToLower();
+                    int roll = request.Roll.Value;
 
-                    if (camel == null)
-                        return BadRequest("Invalid camel color");
+                    if (roll < 1 || roll > 3)
+                        return BadRequest("Roll must be between 1 and 3.");
 
-                    game.Board.MoveCamel(camel, request.Roll.Value, game);
-                    game.DicePyramid.UseDie(request.Color);
-                    game.GrantPyramidTicket(player);
+                    if (!game.DicePyramid.IsDieAvailable(color))
+                        return BadRequest("That die has already been used this leg.");
+
+                    if (color == "grey")
+                    {
+                        game.Board.HandleGreyDie(game, roll);
+
+                        game.DicePyramid.UseDie("grey");
+                        game.GrantPyramidTicket(player);
+                    }
+                    else
+                    {
+                        var camel = game.Board.Camels
+                            .FirstOrDefault(c => c.Color.ToLower() == color);
+
+                        if (camel == null)
+                            return BadRequest("Invalid camel color");
+
+                        game.Board.MoveCamel(camel, roll, game);
+                        game.DicePyramid.UseDie(color);
+                        game.GrantPyramidTicket(player);
+                    }
+
+                    if (game.DicePyramid.PyramidTicketsUsed >= 5)
+                    {
+                        game.EndLegScoring();
+                    }
 
                     break;
+                }
 
                 case "legbet":
                     if (request.BetColor == null)
@@ -108,16 +163,27 @@ namespace CamelUpApi.Controllers
                     break;
 
                 case "winnerbet":
+                    if (request.BetColor == null)
+                        return BadRequest("BetColor required");
 
-                    // later:
-                    // winner bet logic
+                    bool winnerSuccess =
+                        player.TakeFinalBet(game, request.BetColor, true);
+
+                    if (!winnerSuccess)
+                        return BadRequest("Invalid winner bet");
 
                     break;
 
-                case "loserbet":
 
-                    // later:
-                    // loser bet logic
+                case "loserbet":
+                    if (request.BetColor == null)
+                        return BadRequest("BetColor required");
+
+                    bool loserSuccess =
+                        player.TakeFinalBet(game, request.BetColor, false);
+
+                    if (!loserSuccess)
+                        return BadRequest("Invalid loser bet");
 
                     break;
 

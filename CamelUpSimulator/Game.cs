@@ -33,6 +33,21 @@ namespace CamelUpSimulator
         // Leg bet decks
         private Dictionary<string, Stack<LegBet>> legBetDecks = new();
 
+        public class LegBetResult
+        {
+            public string PlayerName { get; set; } = "";
+            public List<LegBetOutcome> Bets { get; set; } = new();
+            public int PyramidTickets { get; set; }
+        }
+
+        public class LegBetOutcome
+        {
+    public string Color { get; set; } = "";
+    public int Position { get; set; }
+    public int Payout { get; set; }
+    public int BetValue { get; set; }
+}
+
         public Game(List<string> playerNames, Board? board = null, bool isSimulation = false)
         {
             GameId = Guid.NewGuid();
@@ -296,6 +311,17 @@ namespace CamelUpSimulator
             Console.WriteLine("[DEBUG] Leg bet decks reset for new leg.");
         }
 
+        public void RestoreLegBetDecks(Dictionary<string, List<int>> deckData)
+        {
+            legBetDecks.Clear();
+            foreach (var kvp in deckData)
+            {
+                legBetDecks[kvp.Key] = new Stack<LegBet>(
+                    kvp.Value.Select(v => new LegBet(kvp.Key, v)).Reverse()
+                );
+            }
+        }
+
         public List<string> AvailableLegBetColors()
         {
             return legBetDecks
@@ -350,6 +376,51 @@ namespace CamelUpSimulator
                 kvp => kvp.Key,
                 kvp => kvp.Value.Select(card => card.Value).ToList()
             );
+        }
+
+        public List<LegBetResult> GetLegBetResults()
+        {
+            var camelOrder = Board.GetCamelOrder()
+                .Where(c => c != "white" && c != "black")
+                .ToList();
+
+            var results = new List<LegBetResult>();
+
+            foreach (var player in Players)
+            {
+                if (player.HeldLegBets.Count == 0)
+                {
+                    results.Add(new LegBetResult
+                    {
+                        PlayerName = player.Name,
+                        Bets = new List<LegBetOutcome>(),
+                        PyramidTickets = player.TotalPyramidTicketsUsedThisLeg()
+                    });
+                    continue;
+                }
+
+                var outcomes = player.HeldLegBets.Select(bet =>
+                {
+                    int pos = camelOrder.IndexOf(bet.Color);
+                    int payout = pos == 0 ? bet.Value : pos == 1 ? 1 : -1;
+                    return new LegBetOutcome
+                    {
+                        Color = bet.Color,
+                        Position = pos + 1,
+                        Payout = payout,
+                        BetValue = bet.Value
+                    };
+                }).ToList();
+
+                results.Add(new LegBetResult
+                {
+                    PlayerName = player.Name,
+                    Bets = outcomes,
+                    PyramidTickets = player.TotalPyramidTicketsUsedThisLeg()
+                });
+            }
+
+            return results;
         }
 
         // ----------------------------
@@ -599,7 +670,7 @@ namespace CamelUpSimulator
 
             Console.WriteLine($"\n[Recommendation] {GetLegRecommendation(player, probs)}");
 
-            var tileRecs = ProbabilityEngine.EvaluateDesertTilePlacements(this, player, 2000);
+            var tileRecs = ProbabilityEngine.EvaluateDesertTilePlacements(this, player, probs, 2000);
 
             if (tileRecs.Count > 0)
             {

@@ -80,5 +80,17 @@ namespace CamelUpSimulator
             remainingDice = new List<string>(allDice);
             PyramidTicketsUsed = 0;
         }
+
+        /// <summary>
+        /// Restore dice state from a snapshot (used for undo).
+        /// </summary>
+        public void RestoreAllDice(List<string> savedDice)
+        {
+            remainingDice = new List<string>(savedDice);
+            PyramidTicketsUsed = allDice.Count - remainingDice.Count(d => d != "grey") + (remainingDice.Contains("grey") ? 0 : 1);
+            // Simpler: just count how many dice have been used
+            PyramidTicketsUsed = allDice.Count - savedDice.Count;
+            if (PyramidTicketsUsed < 0) PyramidTicketsUsed = 0;
+        }
     }
 }

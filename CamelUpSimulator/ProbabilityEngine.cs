@@ -8,6 +8,7 @@ namespace CamelUpSimulator
     {
         public Dictionary<string, double> FirstPlaceOdds { get; set; } = new();
         public Dictionary<string, double> SecondPlaceOdds { get; set; } = new();
+        public Dictionary<string, double> LastPlaceOdds { get; set; } = new();
         public int SimulationsRun { get; set; }
     }
 
@@ -26,6 +27,7 @@ namespace CamelUpSimulator
 
             var firstCounts = normalColors.ToDictionary(c => c, c => 0);
             var secondCounts = normalColors.ToDictionary(c => c, c => 0);
+            var lastCounts = normalColors.ToDictionary(c => c, c => 0);
 
             for (int sim = 0; sim < simulations; sim++)
             {
@@ -66,12 +68,110 @@ namespace CamelUpSimulator
 
                 if (order.Count > 1)
                     secondCounts[order[1]]++;
+                
+                if (order.Count > 0)
+                    lastCounts[order[^1]]++;
             }
 
             foreach (var color in normalColors)
             {
                 result.FirstPlaceOdds[color] = 100.0 * firstCounts[color] / simulations;
                 result.SecondPlaceOdds[color] = 100.0 * secondCounts[color] / simulations;
+                result.LastPlaceOdds[color] = 100.0 * lastCounts[color] / simulations;
+            }
+
+            result.SimulationsRun = simulations;
+            return result;
+        }
+
+        public class RaceProbabilityResult
+        {
+            public Dictionary<string, double> RaceWinOdds { get; set; } = new();
+            public Dictionary<string, double> RaceLastOdds { get; set; } = new();
+            public int SimulationsRun { get; set; }
+        }
+
+        public static RaceProbabilityResult CalculateRaceProbabilities(Game game, int simulations = 2000)
+        {
+            var result = new RaceProbabilityResult();
+            var rng = new Random();
+
+            var normalColors = game.Board.Camels
+                .Where(c => c.Color != "white" && c.Color != "black")
+                .Select(c => c.Color)
+                .Distinct()
+                .ToList();
+
+            var firstCounts = normalColors.ToDictionary(c => c, c => 0);
+            var lastCounts = normalColors.ToDictionary(c => c, c => 0);
+
+            // All dice colors for a full leg
+            var allDiceColors = normalColors.Concat(new[] { "grey" }).ToList();
+
+            for (int sim = 0; sim < simulations; sim++)
+            {
+                Board simBoard = CloneBoard(game.Board);
+
+                // Start with current leg's remaining dice
+                List<string> remainingDice = game.DicePyramid.GetRemainingDice();
+
+                bool raceOver = false;
+                int maxLegs = 10; // safety cap to prevent infinite loops
+                int legCount = 0;
+
+                while (!raceOver && legCount < maxLegs)
+                {
+                    // Roll all remaining dice for this leg
+                    var diceThisLeg = new List<string>(remainingDice);
+
+                    while (diceThisLeg.Count > 0)
+                    {
+                        int dieIndex = rng.Next(diceThisLeg.Count);
+                        string dieColor = diceThisLeg[dieIndex];
+                        diceThisLeg.RemoveAt(dieIndex);
+
+                        int roll = rng.Next(1, 4);
+
+                        if (dieColor == "grey")
+                            SimulateGreyDie(simBoard, roll, rng);
+                        else
+                        {
+                            var camel = simBoard.Camels.FirstOrDefault(c => c.Color == dieColor);
+                            if (camel != null)
+                                MoveCamelSim(simBoard, camel, roll);
+                        }
+
+                        if (IsRaceFinishedSim(simBoard))
+                        {
+                            raceOver = true;
+                            break;
+                        }
+                    }
+
+                    if (!raceOver)
+                    {
+                        // Start next leg with full set of dice
+                        // Desert tiles reset each leg
+                        simBoard.DesertTiles.Clear();
+                        remainingDice = new List<string>(allDiceColors);
+                        legCount++;
+                    }
+                }
+
+                var order = simBoard.GetCamelOrder()
+                    .Where(c => c != "white" && c != "black")
+                    .ToList();
+
+                if (order.Count > 0)
+                    firstCounts[order[0]]++;
+                if (order.Count > 0)
+                    lastCounts[order[^1]]++;
+            }
+
+            foreach (var color in normalColors)
+            {
+                result.RaceWinOdds[color] = 100.0 * firstCounts[color] / simulations;
+                result.RaceLastOdds[color] = 100.0 * lastCounts[color] / simulations;
             }
 
             result.SimulationsRun = simulations;
@@ -117,31 +217,8 @@ namespace CamelUpSimulator
             if (white == null || black == null)
                 return;
 
-            Camel chosen;
-
-            bool whiteHasRacers = board.Spaces[white.Position]
-                .Any(c => c.Color != "white" && c.Color != "black" && c.StackHeight > white.StackHeight);
-
-            bool blackHasRacers = board.Spaces[black.Position]
-                .Any(c => c.Color != "white" && c.Color != "black" && c.StackHeight > black.StackHeight);
-
-            if (white.Position == black.Position)
-            {
-                chosen = (white.StackHeight > black.StackHeight) ? white : black;
-            }
-            else if (whiteHasRacers && !blackHasRacers)
-            {
-                chosen = white;
-            }
-            else if (blackHasRacers && !whiteHasRacers)
-            {
-                chosen = black;
-            }
-            else
-            {
-                chosen = rng.Next(2) == 0 ? white : black;
-            }
-
+            // In the real game the grey die randomly selects white or black with equal probability
+            Camel chosen = rng.Next(2) == 0 ? white : black;
             MoveCrazyCamelSim(board, chosen, roll);
         }
 
@@ -232,13 +309,12 @@ namespace CamelUpSimulator
             }
 }
 
-        public static List<DesertTileRecommendation> EvaluateDesertTilePlacements(Game game, Player player, int simulations = 3000)
+        public static List<DesertTileRecommendation> EvaluateDesertTilePlacements(Game game, Player player, LegProbabilityResult baselineProbs, int simulations = 3000)
         {
             var results = new List<DesertTileRecommendation>();
-
-            var baselineProbs = CalculateLegProbabilities(game, simulations);
-            double currentPortfolioEV = game.GetPlayerLegPortfolioEV(player, baselineProbs);
-
+            double currentPortfolioEV = player.HeldLegBets.Count > 0
+                ? game.GetPlayerLegPortfolioEV(player, baselineProbs)
+                : game.GetLegBetExpectedValues(baselineProbs).Values.DefaultIfEmpty(0).Max();
             var legalPositions = game.GetLegalDesertTilePositionsForPlayer(player);
 
             foreach (int pos in legalPositions)
@@ -257,9 +333,11 @@ namespace CamelUpSimulator
                     // Recalculate probabilities
                     var probs = CalculateLegProbabilities(simGame, simulations);
 
-                    double newPortfolioEV = simGame.GetPlayerLegPortfolioEV(player, probs);
+                    double newPortfolioEV = player.HeldLegBets.Count > 0
+                        ? simGame.GetPlayerLegPortfolioEV(player, probs)
+                        : simGame.GetLegBetExpectedValues(probs).Values.DefaultIfEmpty(0).Max();
                     double evGain = newPortfolioEV - currentPortfolioEV;
-                    double hitProbability = 0; // placeholder for now
+                    double hitProbability = EstimateTileHitProbability(game, pos);
 
                     results.Add(new DesertTileRecommendation
                     {
@@ -284,5 +362,24 @@ namespace CamelUpSimulator
                 .Where(c => c.Color != "white" && c.Color != "black")
                 .Any(c => c.Position >= board.SpacesCount);
         }
+
+        private static double EstimateTileHitProbability(Game game, int tilePos)
+        {
+            int remainingDice = game.DicePyramid.GetRemainingDice()
+                .Count(d => d != "grey");
+
+            int camelsInRange = game.Board.Camels
+                .Where(c => c.Color != "white" && c.Color != "black")
+                .Count(c => c.Position < tilePos && c.Position >= tilePos - 3);
+
+            if (remainingDice == 0 || camelsInRange == 0)
+                return 0;
+
+            // Each camel in range has ~1/3 chance per roll of hitting the tile
+            // Scale by how many dice are left in the leg
+            double diceLeftRatio = remainingDice / 5.0;
+            return camelsInRange * diceLeftRatio * 0.33;
+        }
+
     }
 }

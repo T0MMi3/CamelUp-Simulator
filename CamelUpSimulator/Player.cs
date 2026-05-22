@@ -530,5 +530,21 @@ namespace CamelUpSimulator
             Console.WriteLine($"{Name}'s total is now {TotalPoints} points.\n");
             HeldLegBets.Clear(); // Clear same list
         }
+
+        public void RestorePoints(int value)
+        {
+            points = value;
+        }
+
+        public void RestoreLegBets(List<LegBet> bets)
+        {
+            HeldLegBets = bets;
+        }
+
+        public void RestoreFinalBets(List<FinalRaceBet> bets)
+        {
+            heldFinalBets = bets;
+        }
+
     }
 }

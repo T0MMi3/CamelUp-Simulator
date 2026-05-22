@@ -9,4 +9,5 @@ public class MoveRequest
 
     public int? TilePosition { get; set; }
     public string? TileType { get; set; }
+    public string? CrazyCamel { get; set; }
 }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Tommy Do\\Dev\\CamelUp-Simulator\\camelupapi\\CamelUpApi.csproj": {}
+    "C:\\Users\\Tommy Do\\Dev\\CamelUp-Simulator\\CamelUpApi\\CamelUpApi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Tommy Do\\Dev\\CamelUp-Simulator\\camelupapi\\CamelUpApi.csproj": {
+    "C:\\Users\\Tommy Do\\Dev\\CamelUp-Simulator\\CamelUpApi\\CamelUpApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Tommy Do\\Dev\\CamelUp-Simulator\\camelupapi\\CamelUpApi.csproj",
+        "projectUniqueName": "C:\\Users\\Tommy Do\\Dev\\CamelUp-Simulator\\CamelUpApi\\CamelUpApi.csproj",
         "projectName": "CamelUpApi",
-        "projectPath": "C:\\Users\\Tommy Do\\Dev\\CamelUp-Simulator\\camelupapi\\CamelUpApi.csproj",
+        "projectPath": "C:\\Users\\Tommy Do\\Dev\\CamelUp-Simulator\\CamelUpApi\\CamelUpApi.csproj",
         "packagesPath": "C:\\Users\\Tommy Do\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Tommy Do\\Dev\\CamelUp-Simulator\\camelupapi\\obj\\",
+        "outputPath": "C:\\Users\\Tommy Do\\Dev\\CamelUp-Simulator\\CamelUpApi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Tommy Do\\AppData\\Roaming\\NuGet\\NuGet.Config",

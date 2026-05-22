@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "KNdwTXLP/z+2lML/L8BtfstXjlr+cwOildLNf+F4WGvCOQfzCiEInykv7XtT4X28qDX8QSf8QHU73ki6CMHrrg==",
+  "dgSpecHash": "7qC+6LBF1Rs5krKGZaXyECHQ6xTcK/TSmjbFGsOky9yj1A2FmKDRKla3BZudE0QkURLqkDO3tpSmzeDhjK7Bwg==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Tommy Do\\Dev\\CamelUp-Simulator\\camelupapi\\CamelUpApi.csproj",
+  "projectFilePath": "C:\\Users\\Tommy Do\\Dev\\CamelUp-Simulator\\CamelUpApi\\CamelUpApi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Tommy Do\\.nuget\\packages\\microsoft.aspnetcore.openapi\\7.0.5\\microsoft.aspnetcore.openapi.7.0.5.nupkg.sha512",
     "C:\\Users\\Tommy Do\\.nuget\\packages\\microsoft.data.sqlite\\10.0.7\\microsoft.data.sqlite.10.0.7.nupkg.sha512",

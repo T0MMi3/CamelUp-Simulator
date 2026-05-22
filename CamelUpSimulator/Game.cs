@@ -55,7 +55,7 @@ namespace CamelUpSimulator
 
             if (!isSimulation)
             {
-                Console.WriteLine($"[DEBUG] Game ID: {GameId}");
+
             }
 
             if (board != null)
@@ -183,15 +183,15 @@ namespace CamelUpSimulator
         // ----------------------------
         public async Task PlayGameAsync()
         {
-            Console.WriteLine("Starting Camel Up Simulator!");
+
 
             while (!IsRaceFinished())
             {
-                Console.WriteLine($"\n=== Leg {CurrentLeg} ===");
+
 
                 var startingPlayer = GetStartingPlayer();
                 int startIndex = Players.IndexOf(startingPlayer);
-                Console.WriteLine($"[DEBUG] Leg {CurrentLeg} will start with {startingPlayer.Name}.");
+
 
                 bool legOver = false;
 
@@ -199,18 +199,18 @@ namespace CamelUpSimulator
                 {
                     var player = Players[(startIndex + i) % Players.Count];
 
-                    Console.WriteLine($"\n{player.Name}'s turn:");
+
 
                     await player.TakeTurnAsync(this);
 
                     // Leg ends when all 5 dice are used
                     if (DicePyramid.PyramidTicketsUsed >= 5)
                     {
-                        Console.WriteLine("\n--- All 5 pyramid tickets taken. Ending leg... ---");
+
 
                         // Next leg starts to the left of the player who ended this leg
                         startingPlayerIndex = (Players.IndexOf(player) + 1) % Players.Count;
-                        Console.WriteLine($"[DEBUG] Next leg will start with {Players[startingPlayerIndex].Name}.");
+
 
                         EndLegScoring();
                         legOver = true;
@@ -220,11 +220,11 @@ namespace CamelUpSimulator
                     // Race ends when a normal camel moves beyond space 16
                     if (IsRaceFinished())
                     {
-                        Console.WriteLine("\n🏁 A camel has crossed the finish line! Ending the leg and race...");
+
 
                         // This would be the next starter if another leg happened
                         startingPlayerIndex = (Players.IndexOf(player) + 1) % Players.Count;
-                        Console.WriteLine($"[DEBUG] Next leg would start with {Players[startingPlayerIndex].Name}.");
+
 
                         EndLegScoring();
                         legOver = true;
@@ -276,7 +276,7 @@ namespace CamelUpSimulator
             else if (pile == "loser")
                 loserPilePlayers.Add(player);
 
-            Console.WriteLine($"[DEBUG] Final pile totals -> Winner: {winnerPilePlayers.Count}, Loser: {loserPilePlayers.Count}");
+
         }
 
         // ----------------------------
@@ -308,7 +308,7 @@ namespace CamelUpSimulator
             foreach (var player in Players)
                 player.HeldLegBets.Clear();
 
-            Console.WriteLine("[DEBUG] Leg bet decks reset for new leg.");
+
         }
 
         public void RestoreLegBetDecks(Dictionary<string, List<int>> deckData)
@@ -355,20 +355,7 @@ namespace CamelUpSimulator
             return stack.Peek();
         }
 
-        public void DisplayLegBetStatus()
-        {
-            Console.WriteLine("\nCurrent Leg Bet Cards:");
-            foreach (var kvp in legBetDecks)
-            {
-                var color = kvp.Key;
-                var cards = kvp.Value.ToList();
-
-                if (cards.Count == 0)
-                    Console.WriteLine($"  {color,-8}: [None left]");
-                else
-                    Console.WriteLine($"  {color,-8}: Top = {cards.First().Value} pts | Remaining = {cards.Count}");
-            }
-        }
+        public void DisplayLegBetStatus() { }
 
         public Dictionary<string, List<int>> GetLegBetDeckStatus()
         {
@@ -433,17 +420,17 @@ namespace CamelUpSimulator
                 .Where(c => c != "white" && c != "black")
                 .ToList();
 
-            Console.WriteLine("\n================= END OF LEG =================");
-            Console.WriteLine("Camel order (normal camels only): " + string.Join(", ", camelOrder));
-            Console.WriteLine($"[DEBUG] EndLegScoring() called for Leg {CurrentLeg}");
+
+
+
 
             foreach (var player in Players)
                 player.ScoreLegBets(camelOrder);
 
-            Console.WriteLine("----------------------------------------");
-            Console.WriteLine("Updated Player Scores:");
+
+
             foreach (var player in Players)
-                Console.WriteLine($"{player.Name}: {player.TotalPoints} points");
+
 
             DicePyramid.ResetDice();
             Board.ResetDesertTiles();
@@ -453,7 +440,7 @@ namespace CamelUpSimulator
 
             ResetLegBets();
 
-            Console.WriteLine("\n--- Leg complete. Press ENTER to continue. ---");
+
             //Console.ReadLine();
         }
 
@@ -475,8 +462,8 @@ namespace CamelUpSimulator
             hiddenWinnerPile.Clear();
             hiddenLoserPile.Clear();
 
-            Console.WriteLine("\n=== Enter Hidden Final Bets ===");
-            Console.WriteLine("Enter each pile in table order: BOTTOM first, TOP last.\n");
+
+
 
             var normalCamels = Board.Camels
                 .Where(c => c.Color != "white" && c.Color != "black")
@@ -491,15 +478,15 @@ namespace CamelUpSimulator
             {
                 var player = winnerPilePlayers[i];
 
-                Console.WriteLine($"\nWinner pile bet {i + 1} of {winnerPilePlayers.Count} (BOTTOM -> TOP)");
-                Console.WriteLine($"This card belongs to: {player.Name}");
+
+
 
                 string colorInput;
                 while (true)
                 {
-                    Console.WriteLine("Available camel colors:");
+
                     foreach (var color in normalCamels)
-                        Console.WriteLine($"- {color}");
+
 
                     Console.Write("Enter camel color: ");
                     colorInput = Console.ReadLine()?.Trim().ToLower() ?? "";
@@ -507,7 +494,7 @@ namespace CamelUpSimulator
                     if (normalCamels.Contains(colorInput))
                         break;
 
-                    Console.WriteLine("Invalid camel color. Try again.");
+
                 }
 
                 AddHiddenWinnerBet(player, colorInput);
@@ -520,15 +507,15 @@ namespace CamelUpSimulator
             {
                 var player = loserPilePlayers[i];
 
-                Console.WriteLine($"\nLoser pile bet {i + 1} of {loserPilePlayers.Count} (BOTTOM -> TOP)");
-                Console.WriteLine($"This card belongs to: {player.Name}");
+
+
 
                 string colorInput;
                 while (true)
                 {
-                    Console.WriteLine("Available camel colors:");
+
                     foreach (var color in normalCamels)
-                        Console.WriteLine($"- {color}");
+
 
                     Console.Write("Enter camel color: ");
                     colorInput = Console.ReadLine()?.Trim().ToLower() ?? "";
@@ -536,7 +523,7 @@ namespace CamelUpSimulator
                     if (normalCamels.Contains(colorInput))
                         break;
 
-                    Console.WriteLine("Invalid camel color. Try again.");
+
                 }
 
                 AddHiddenLoserBet(player, colorInput);
@@ -552,8 +539,8 @@ namespace CamelUpSimulator
                 .Where(c => c != "white" && c != "black")
                 .ToList();
 
-            Console.WriteLine("\n=== Final Race Results ===");
-            Console.WriteLine("Final camel order: " + string.Join(", ", camelOrder));
+
+
 
             if (camelOrder.Count == 0)
                 return;
@@ -577,13 +564,13 @@ namespace CamelUpSimulator
                         : 1;
 
                     bet.player.AddPoints(payout);
-                    Console.WriteLine($"{bet.player.Name} correctly guessed WINNER ({bet.color}) and gets +{payout}.");
+
                     winnerCorrectCount++;
                 }
                 else
                 {
                     bet.player.SubtractPoints(1);
-                    Console.WriteLine($"{bet.player.Name} guessed wrong on WINNER ({bet.color}) and loses 1 point.");
+
                 }
             }
 
@@ -598,19 +585,19 @@ namespace CamelUpSimulator
                         : 1;
 
                     bet.player.AddPoints(payout);
-                    Console.WriteLine($"{bet.player.Name} correctly guessed LOSER ({bet.color}) and gets +{payout}.");
+
                     loserCorrectCount++;
                 }
                 else
                 {
                     bet.player.SubtractPoints(1);
-                    Console.WriteLine($"{bet.player.Name} guessed wrong on LOSER ({bet.color}) and loses 1 point.");
+
                 }
             }
 
-            Console.WriteLine("\n=== Final Player Scores ===");
-            foreach (var player in Players)
-                Console.WriteLine($"{player.Name}: {player.TotalPoints} points");
+
+            foreach (var player in Players) {}
+
         }
 
         private void LogGameResult()
@@ -645,7 +632,7 @@ namespace CamelUpSimulator
 
             System.IO.File.AppendAllText(filePath, line + Environment.NewLine);
 
-            Console.WriteLine("[DEBUG] Game result summary logged to game_results.csv");
+
         }
 
         // ----------------------------
@@ -655,32 +642,15 @@ namespace CamelUpSimulator
             var probs = ProbabilityEngine.CalculateLegProbabilities(this, 5000);
             var evs = GetLegBetExpectedValues(probs);
 
-            Console.WriteLine("\n----- Leg Probabilities -----");
-
             foreach (var color in probs.FirstPlaceOdds.Keys
                 .OrderByDescending(c => probs.FirstPlaceOdds[c]))
             {
                 double ev = evs.ContainsKey(color) ? evs[color] : 0;
-
-                Console.WriteLine(
-                    $"{color,-8} Win: {probs.FirstPlaceOdds[color],5:0.0}%   " +
-                    $"2nd: {probs.SecondPlaceOdds[color],5:0.0}%   " +
-                    $"EV: {ev,6:0.00}");
             }
-
-            Console.WriteLine($"\n[Recommendation] {GetLegRecommendation(player, probs)}");
 
             var tileRecs = ProbabilityEngine.EvaluateDesertTilePlacements(this, player, probs, 2000);
 
-            if (tileRecs.Count > 0)
-            {
-                var bestTile = tileRecs.First();
-
-                Console.WriteLine(
-                    $"[Tile Recommendation] {(bestTile.IsCheering ? "Cheering (+1)" : "Booing (-1)")} " +
-                    $"at space {bestTile.Position + 1} " +
-                    $"(EV gain: {bestTile.TotalScore:0.00})");
-            }
+            if (tileRecs.Count > 0) { }
         }
 
         public string GetLegRecommendation(Player player, LegProbabilityResult probs)

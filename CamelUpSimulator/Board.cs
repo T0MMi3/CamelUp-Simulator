@@ -54,7 +54,7 @@ namespace CamelUpSimulator
                     c.Position = SpacesCount; // logical tile just past finish
                 }
 
-                Console.WriteLine($"{camel.Color} crosses the finish line!");
+
                 // No stacking or desert tile interaction beyond finish
                 return;
             }
@@ -69,7 +69,7 @@ namespace CamelUpSimulator
                 int adjustedPos = Math.Max(0, Math.Min(SpacesCount - 1, newPos + shift));
 
                 string direction = shift > 0 ? "forward" : "backward";
-                Console.WriteLine($"{camel.Color} landed on {tile.OwnerName}'s {(tile.IsOasis ? "Cheering (+1)" : "Booing (-1)")} tile and moves {direction} to {adjustedPos + 1}.");
+
 
                 newPos = adjustedPos;
 
@@ -77,7 +77,7 @@ namespace CamelUpSimulator
                 if (owner != null)
                 {
                     owner.AddPoints(1);
-                    Console.WriteLine($"{owner.Name} gains +1 point from their tile!");
+
                 }
             }
 
@@ -108,7 +108,7 @@ namespace CamelUpSimulator
                     Camels.Add(c);
             }
 
-            Console.WriteLine($"{camel.Color} moves from {oldPos + 1} to {newPos + 1}.");
+
         }
 
 
@@ -122,7 +122,7 @@ namespace CamelUpSimulator
 
             if (white == null || black == null)
             {
-                Console.WriteLine("[DEBUG] One or both crazy camels missing.");
+
                 return;
             }
 
@@ -145,7 +145,7 @@ namespace CamelUpSimulator
             if (white.Position == black.Position)
             {
                 chosenColor = (white.StackHeight > black.StackHeight) ? "white" : "black";
-                Console.WriteLine($"[Crazy Camel Rule A] Both are stacked. Top one ({chosenColor}) moves {rolledNumber} backward and carries the other.");
+
                 MoveCrazyCamel(chosenColor == "white" ? white : black, rolledNumber, game);
                 return;
             }
@@ -155,20 +155,20 @@ namespace CamelUpSimulator
             // ---------------------------------------------------
             if (whiteHasRacers && !blackHasRacers)
             {
-                Console.WriteLine($"[Crazy Camel Rule B] White has racers riding! White moves {rolledNumber} backward.");
+
                 MoveCrazyCamel(white, rolledNumber, game);
                 return;
             }
             if (blackHasRacers && !whiteHasRacers)
             {
-                Console.WriteLine($"[Crazy Camel Rule B] Black has racers riding! Black moves {rolledNumber} backward.");
+
                 MoveCrazyCamel(black, rolledNumber, game);
                 return;
             }
             if (whiteHasRacers && blackHasRacers)
             {
                 chosenColor = (white.StackHeight > black.StackHeight) ? "white" : "black";
-                Console.WriteLine($"[Crazy Camel Rule B] Both have racers (weird case). Top one ({chosenColor}) moves {rolledNumber} backward.");
+
                 MoveCrazyCamel(chosenColor == "white" ? white : black, rolledNumber, game);
                 return;
             }
@@ -194,14 +194,14 @@ namespace CamelUpSimulator
         {
             if (camel == null || (camel.Color != "white" && camel.Color != "black"))
             {
-                Console.WriteLine("[DEBUG] Tried to move non-crazy camel with MoveCrazyCamel().");
+
                 return;
             }
 
             int oldPos = camel.Position;
             if (oldPos < 0 || oldPos >= Spaces.Count)
             {
-                Console.WriteLine("[DEBUG] Invalid camel position!");
+
                 return;
             }
 
@@ -209,7 +209,7 @@ namespace CamelUpSimulator
             int camelIndex = oldStack.IndexOf(camel);
             if (camelIndex == -1)
             {
-                Console.WriteLine("[DEBUG] Crazy camel not found in stack.");
+
                 return;
             }
 
@@ -226,14 +226,14 @@ namespace CamelUpSimulator
                 int shift = tile.IsOasis ? -1 : 1; // reversed
                 int adjustedPos = Math.Max(0, Math.Min(SpacesCount - 1, newPos + shift));
 
-                Console.WriteLine($"{camel.Color} hits {tile.OwnerName}'s {(tile.IsOasis ? "Cheering (+1)" : "Booing (-1)")} tile (reversed) and moves to {adjustedPos + 1}.");
+
                 newPos = adjustedPos;
 
                 var owner = game.Players.FirstOrDefault(p => p.Name == tile.OwnerName);
                 if (owner != null)
                 {
                     owner.AddPoints(1);
-                    Console.WriteLine($"{owner.Name} gains +1 point from their tile!");
+
                 }
             }
 
@@ -252,7 +252,7 @@ namespace CamelUpSimulator
                 c.StackHeight = destStack.IndexOf(c);
             }
 
-            Console.WriteLine($"{camel.Color} moves backward from {oldPos + 1} to {newPos + 1}.");
+
         }
 
 
@@ -305,7 +305,7 @@ namespace CamelUpSimulator
 
         public void PrintBoard()
         {
-            Console.WriteLine("Board:");
+
             int maxStackHeight = Spaces.Max(s => s.Count);
 
             for (int row = maxStackHeight - 1; row >= 0; row--)
@@ -318,15 +318,15 @@ namespace CamelUpSimulator
                     else
                         Console.Write(".   ");
                 }
-                Console.WriteLine();
+
             }
 
             for (int pos = 1; pos <= SpacesCount; pos++)
                 Console.Write(pos.ToString().PadRight(4));
-            Console.WriteLine();
+
 
             // PUT THIS RIGHT HERE 
-            Console.WriteLine("    " + new string(' ', (SpacesCount - 1) * 4) + "FINISH!");
+
 
             for (int pos = 0; pos < SpacesCount; pos++)
             {
@@ -336,7 +336,7 @@ namespace CamelUpSimulator
                 else
                     Console.Write("    ");
             }
-            Console.WriteLine("\n");
+
         }
 
 

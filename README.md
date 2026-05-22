@@ -2,7 +2,7 @@
 
 A full-stack turn-by-turn simulator for the board game **Camel Up**, featuring a real-time **Monte Carlo EV (Expected Value) Engine** that calculates the mathematically optimal action for each player on every turn.
 
-**Live Demo:** [camelup-simulator.vercel.app](#) <!-- replace with your live URL -->  
+**Live Demo:** [camel-up-simulator.vercel.app](https://camel-up-simulator.vercel.app)
 **Portfolio:** [tommy-do.web.app](https://tommy-do.web.app/)  
 **Author:** Tommy Do · [GitHub](https://github.com/T0MMi3)
 

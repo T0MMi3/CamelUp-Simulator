@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import BoardSetup from "./BoardSetup";
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const API_BASE = "http://localhost:5012"; // point to your .NET API
+//const API_BASE = "http://localhost:5012"; // point to your .NET API
+const API_BASE = "https://camelup-simulator-production.up.railway.app";
 
 const CAMEL_COLORS = {
   blue:   { bg: "#3B82F6", text: "#fff", emoji: "🐫" },

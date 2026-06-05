@@ -23,7 +23,7 @@ builder.Services.AddCors(options =>
                 "http://localhost:3000",
                 "http://localhost:5173",
                 "http://127.0.0.1:5173",
-                "https://camelup-simulator-production.up.railway.app"
+                "https://camelup-simulator-production.up.railway.app",
                 "https://camel-up-simulator.vercel.app"
             )
             .AllowAnyHeader()

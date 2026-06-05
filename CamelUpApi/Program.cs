@@ -1,3 +1,4 @@
+using CamelUpApi.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Services ──────────────────────────────────────────────────────────────────
